@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:device_signal/data/local/db/app_db.dart';
 import 'package:flutter/material.dart';
-import 'package:web_socket_channel/io.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:xenderclone/database/database_helper.dart';
+import 'package:drift/drift.dart' as drift;
 
 class ClientInfo {
   String id;
@@ -23,12 +22,10 @@ class Message {
 class WebSocketServer {
   List<ClientInfo> _clientsInfo = [];
   List<Message> _messages = [];
-  DatabaseHelper _databaseHelper = DatabaseHelper();
   HttpServer? _httpServer;
-  WebSocketChannel? _channel;
 
   void startServer() async {
-    final server = await HttpServer.bind("192.168.1.5", 8080);
+    final server = await HttpServer.bind("192.168.1.102", 8080);
     print('Server started port 8080');
     _httpServer = server;
 
@@ -59,10 +56,7 @@ class WebSocketServer {
     socket.listen(
       (data) {
         final jsonMessage = json.decode(data);
-        final message = Message(clientId, clientIp, jsonMessage);
-        _messages.add(message);
-
-        _saveMessageToDatabase(clientId, clientIp, json.encode(jsonMessage));
+        _saveMessageToDatabase(clientId, clientIp, jsonMessage['message']);
       },
       onDone: () {
         print('Client disconnected: $clientId');
@@ -71,7 +65,11 @@ class WebSocketServer {
     );
   }
 
-  Future<void> _saveMessageToDatabase(String clientId, String clientIp, String data) async {
-    await _databaseHelper.insertMessage(clientId, clientIp, data);
+  Future<void> _saveMessageToDatabase(
+      String clientId, String clientIp, String data) async {
+    final AppDB _appDb = AppDB();
+    final entity = ErrorCompanion(
+        deviceId: drift.Value(clientId), errCode: drift.Value(data));
+    _appDb.insertError(entity).then((value) => print(value));
   }
 }
