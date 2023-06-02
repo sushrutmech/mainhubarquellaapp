@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:device_signal/data/local/db/app_db.dart';
 import 'package:flutter/material.dart';
 import 'package:drift/drift.dart' as drift;
+import 'package:flutter/services.dart';
 
 class ClientInfo {
   String id;
@@ -23,16 +24,20 @@ class WebSocketServer {
   List<ClientInfo> _clientsInfo = [];
   List<Message> _messages = [];
   HttpServer? _httpServer;
+  final clientId = "192.168.1.101";
 
   void startServer() async {
-    final server = await HttpServer.bind("192.168.1.102", 8080);
-    print('Server started port 8080');
-    _httpServer = server;
-
-    await for (var request in server) {
-      if (WebSocketTransformer.isUpgradeRequest(request)) {
-        _handleWebSocket(request);
+    try {
+      final server = await HttpServer.bind(clientId, 8080);
+      print('Server started port 8080');
+      await for (var request in server) {
+        if (WebSocketTransformer.isUpgradeRequest(request)) {
+          _handleWebSocket(request);
+        }
       }
+    } catch (error) {
+      print('$error');
+      _saveMessageToDatabase(clientId, '', error.toString());
     }
   }
 
@@ -53,16 +58,13 @@ class WebSocketServer {
 
     _clientsInfo.add(ClientInfo(clientId, clientIp));
 
-    socket.listen(
-      (data) {
-        final jsonMessage = json.decode(data);
-        _saveMessageToDatabase(clientId, clientIp, jsonMessage['message']);
-      },
-      onDone: () {
-        print('Client disconnected: $clientId');
-        _clientsInfo.removeWhere((client) => client.id == clientId);
-      },
-    );
+    socket.listen(onError: (error) {}, (data) {
+      final jsonMessage = json.decode(data);
+      _saveMessageToDatabase(clientId, clientIp, jsonMessage['message']);
+    }, onDone: () {
+      print('Client disconnected: $clientId');
+      _clientsInfo.removeWhere((client) => client.id == clientId);
+    });
   }
 
   Future<void> _saveMessageToDatabase(

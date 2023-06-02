@@ -46,45 +46,43 @@ class _CallsStreamScreenState extends State<CallsStreamScreen> {
           if (calls!.isEmpty) {
             return const Text('No data found');
           }
-          if (calls != null) {
-            return ListView.builder(
-              itemCount: calls.length,
-              itemBuilder: (context, index) {
-                final call = calls[index];
-                return Card(
-                  shape: const RoundedRectangleBorder(
-                      side: BorderSide(
-                          color: Colors.green,
-                          style: BorderStyle.solid,
-                          width: 1.2),
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(16.0),
-                          bottomRight: Radius.circular(16.0))),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('No data found'),
-                        Text(
-                          call.id.toString(),
-                          style: const TextStyle(color: Colors.black),
-                        ),
-                        Text(
-                          call.deviceId.toString(),
-                          style: const TextStyle(color: Colors.black),
-                        ),
-                        Text(
-                          call.errCode.toString(),
-                          style: const TextStyle(color: Colors.black),
-                        ),
-                      ],
-                    ),
+          return ListView.builder(
+            itemCount: calls.length,
+            itemBuilder: (context, index) {
+              final call = calls[index];
+              return Card(
+                shape: const RoundedRectangleBorder(
+                    side: BorderSide(
+                        color: Colors.green,
+                        style: BorderStyle.solid,
+                        width: 1.2),
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(16.0),
+                        bottomRight: Radius.circular(16.0))),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('No data found'),
+                      Text(
+                        call.id.toString(),
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                      Text(
+                        call.deviceId.toString(),
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                      Text(
+                        call.errCode.toString(),
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                    ],
                   ),
-                );
-              },
-            );
-          }
+                ),
+              );
+            },
+          );
           return const Text('No data found');
         },
       ),

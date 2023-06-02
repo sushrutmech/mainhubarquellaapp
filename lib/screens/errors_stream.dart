@@ -72,7 +72,7 @@ class _ErrorsStreamScreenState extends State<ErrorsStreamScreen> {
                           style: const TextStyle(color: Colors.black),
                         ),
                         Text(
-                          'ErrorCode: ${error.errCode}',
+                          'Error: ${error.errCode}',
                           style: const TextStyle(color: Colors.black),
                         ),
                       ],
