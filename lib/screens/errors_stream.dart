@@ -1,5 +1,6 @@
 import 'package:device_signal/data/local/db/app_db.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class ErrorsStreamScreen extends StatefulWidget {
@@ -68,11 +69,19 @@ class _ErrorsStreamScreenState extends State<ErrorsStreamScreen> {
                           style: const TextStyle(color: Colors.black),
                         ),
                         Text(
-                          'DeviceId: ${error.deviceId}',
+                          'IpAddress: ${error.deviceId}',
                           style: const TextStyle(color: Colors.black),
                         ),
                         Text(
-                          'Error: ${error.errCode}',
+                          'Error time: ${DateFormat('hh:mm:a').format(error.errDate)}',
+                          style: const TextStyle(color: Colors.black),
+                        ),
+                        Text(
+                          'Error date: ${DateFormat('MMM d, yyyy').format(error.errDate)}',
+                          style: const TextStyle(color: Colors.black),
+                        ),
+                        Text(
+                          error.errCode,
                           style: const TextStyle(color: Colors.black),
                         ),
                       ],

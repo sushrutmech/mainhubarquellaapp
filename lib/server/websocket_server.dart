@@ -4,6 +4,7 @@ import 'package:device_signal/data/local/db/app_db.dart';
 import 'package:flutter/material.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 class ClientInfo {
   String id;
@@ -69,9 +70,14 @@ class WebSocketServer {
 
   Future<void> _saveMessageToDatabase(
       String clientId, String clientIp, String data) async {
+    print(TimeOfDay.fromDateTime(DateTime.now()));
     final AppDB _appDb = AppDB();
     final entity = ErrorCompanion(
-        deviceId: drift.Value(clientId), errCode: drift.Value(data));
+        deviceId: drift.Value(clientId),
+        errCode: drift.Value(data),
+        errDate: drift.Value(
+          DateTime.now(),
+        ));
     _appDb.insertError(entity).then((value) => print(value));
   }
 }

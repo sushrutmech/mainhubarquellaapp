@@ -83,7 +83,6 @@ class _CallsStreamScreenState extends State<CallsStreamScreen> {
               );
             },
           );
-          return const Text('No data found');
         },
       ),
     );
