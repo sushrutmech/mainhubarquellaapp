@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:device_signal/data/local/db/app_db.dart';
 import 'package:flutter/material.dart';
 import 'package:drift/drift.dart' as drift;
-import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 
 class ClientInfo {
   String id;
