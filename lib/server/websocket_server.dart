@@ -28,7 +28,7 @@ class WebSocketServer {
   WebSocketChannel? _channel;
 
   void startServer() async {
-    final server = await HttpServer.bind("192.168.1.5", 8080);
+    final server = await HttpServer.bind("192.168.1.2", 8080);
     print('Server started port 8080');
     _httpServer = server;
 
