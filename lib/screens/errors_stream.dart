@@ -1,7 +1,6 @@
 import 'package:device_signal/data/local/db/app_db.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
 class ErrorsStreamScreen extends StatefulWidget {
   const ErrorsStreamScreen({super.key});
