@@ -1,8 +1,10 @@
-import 'dart:convert';
+import 'dart:async';
+import 'dart:ffi';
 import 'dart:io';
-import 'package:device_signal/data/local/db/app_db.dart';
 import 'package:flutter/material.dart';
-import 'package:drift/drift.dart' as drift;
+import 'package:xenderclone/database/database_helper.dart';
+import 'package:shelf/shelf_io.dart' as shelf_io;
+import 'package:shelf/shelf.dart';
 
 class ClientInfo {
   String id;
@@ -22,21 +24,17 @@ class Message {
 class WebSocketServer {
   List<ClientInfo> _clientsInfo = [];
   List<Message> _messages = [];
+  DatabaseHelper _databaseHelper = DatabaseHelper();
   HttpServer? _httpServer;
-  final clientId = "192.168.1.101";
-
   void startServer() async {
-    try {
-      final server = await HttpServer.bind(clientId, 8080);
-      print('Server started port 8080');
-      await for (var request in server) {
-        if (WebSocketTransformer.isUpgradeRequest(request)) {
-          _handleWebSocket(request);
-        }
+    final server = await HttpServer.bind("192.168.1.100", 8080);
+    print('Server started port 8080');
+    _httpServer = server;
+
+    await for (var request in server) {
+      if (WebSocketTransformer.isUpgradeRequest(request)) {
+        _handleWebSocket(request);
       }
-    } catch (error) {
-      print('$error');
-      _saveMessageToDatabase(clientId, '', error.toString());
     }
   }
 
@@ -50,32 +48,37 @@ class WebSocketServer {
   void _handleWebSocket(HttpRequest request) async {
     final socket = await WebSocketTransformer.upgrade(request);
     final clientId = UniqueKey().toString();
+    Duration globalDuration = const Duration(seconds: 0);
     final clientIp = request.headers.value('X-Forwarded-For') ??
         request.connectionInfo!.remoteAddress.address;
 
-    print('Client connected: $clientId, IP: $clientIp');
-
-    _clientsInfo.add(ClientInfo(clientId, clientIp));
-
-    socket.listen(onError: (error) {}, (data) {
-      final jsonMessage = json.decode(data);
-      _saveMessageToDatabase(clientId, clientIp, jsonMessage['message']);
-    }, onDone: () {
-      print('Client disconnected: $clientId');
-      _clientsInfo.removeWhere((client) => client.id == clientId);
+    Timer timeSync = Timer.periodic(const Duration(hours: 12), (Timer t) {
+      socket.add(DateTime.now().toString());
     });
+
+    print('Client connected: $clientId, IP: $clientIp');
+    _clientsInfo.add(ClientInfo(clientId, clientIp));
+    DateTime nodehubTime;
+    socket.listen(
+      (data) {
+        if (DateTime.tryParse(data) == null) {
+          _saveMessageToDatabase(clientId, clientIp, data);
+          nodehubTime = DateTime.now().subtract(globalDuration);
+          print('${DateTime.now()} $nodehubTime');
+        } else {
+          globalDuration = DateTime.now().difference(DateTime.parse(data));
+          print(globalDuration);
+        }
+      },
+      onDone: () {
+        print('Client disconnected: $clientId');
+        _clientsInfo.removeWhere((client) => client.id == clientId);
+      },
+    );
   }
 
   Future<void> _saveMessageToDatabase(
       String clientId, String clientIp, String data) async {
-    print(TimeOfDay.fromDateTime(DateTime.now()));
-    final AppDB _appDb = AppDB();
-    final entity = ErrorCompanion(
-        deviceId: drift.Value(clientId),
-        errCode: drift.Value(data),
-        errDate: drift.Value(
-          DateTime.now(),
-        ));
-    _appDb.insertError(entity).then((value) => print(value));
+    await _databaseHelper.insertMessage(clientId, clientIp, data);
   }
 }
